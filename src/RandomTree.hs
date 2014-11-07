@@ -15,10 +15,10 @@ import Control.Applicative
 --Cabal
 import Control.Monad.Random
 import Control.Lens ((??))
+import Tree
 
 -- Local
 import Types
-import Tree
 import Label
 
 -- | Run the monad transformer for the generation of a random tree. The
