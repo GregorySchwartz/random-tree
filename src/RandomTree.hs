@@ -29,22 +29,21 @@ runTree :: ReaderStateRandom a
         -> Int
         -> Int
         -> StdGen
-        -> IO (Maybe a)
-runTree start minS maxS minC maxC g = do
-    let treeState = TreeState { size = 0 }
-    let treeConfig = TreeConfig { maxSize     = maxS
-                                , minSize     = minS
-                                , minChildren = minC
-                                , maxChildren = maxC }
-    if minS > maxS
-        then error "Minimum size is larger than maximum size."
-        else return . (evalRand ?? g)
-                    . runMaybeT
-                    . (evalStateT ?? treeState)
-                    . (runReaderT ?? treeConfig)
-                    . runReaderStateRandom
-                    $ start
-
+        -> Maybe a
+runTree start minS maxS minC maxC g
+    | minS > maxS = error "Minimum size is larger than maximum size."
+    | otherwise   = (evalRand ?? g)
+                  . runMaybeT
+                  . (evalStateT ?? treeState)
+                  . (runReaderT ?? treeConfig)
+                  . runReaderStateRandom
+                  $ start
+  where
+    treeState = TreeState { size = 0 }
+    treeConfig = TreeConfig { maxSize     = maxS
+                            , minSize     = minS
+                            , minChildren = minC
+                            , maxChildren = maxC }
 -- | The recursion for each step of the tree
 treeRecursion :: ReaderStateRandom (Tree Int)
 treeRecursion = do
@@ -80,20 +79,27 @@ checkLowerBound = do
 getTree :: ReaderStateRandom (Tree Int)
 getTree = checkLowerBound `mplus` getTree
 
--- | Return trees to test this stuff on
-makeTree :: [String] -> Int -> Int -> Int -> Int -> Int -> IO ()
-makeTree labelList neighborDistance minS maxS minC maxC = do
+-- | Return String trees
+makeTree :: [String]
+         -> Int
+         -> Int
+         -> Int
+         -> Int
+         -> Int
+         -> Bool
+         -> IO (Tree String)
+makeTree labelList neighborDistance minS maxS minC maxC clumpBool = do
     gen1         <- newStdGen
     gen2         <- newStdGen
     gen3         <- newStdGen
 
-    (Just intTree) <- runTree getTree minS maxS minC maxC gen1
-
-    let tree        = show <$> intTree
-    putStr . drawTree $ tree
-
-    let labelMap        = getLabelMap . leaves $ tree
-        filledLabelList = take (length . leaves $ tree) . concat . repeat $ labelList
+    let (Just intTree) = runTree getTree minS maxS minC maxC gen1
+        tree           = show <$> intTree
+        labelMap        = getLabelMap . leaves $ tree
+        filledLabelList = take (length . leaves $ tree)
+                        . concat
+                        . repeat
+                        $ labelList
         distanceMap     = getDistanceMap tree
         newLabelMap     = assignRandomClumpedLabels
                           filledLabelList
@@ -107,5 +113,8 @@ makeTree labelList neighborDistance minS maxS minC maxC = do
                              gen2
                              gen3
                              labelMap
-        newTree         = relabelTree newLabelMap tree
-    putStr . drawTree $ newTree
+        newClumpTree       = relabelTree newLabelMap tree
+        newUniformTree     = relabelTree newUniformLabelMap tree
+    if clumpBool
+        then return newClumpTree
+        else return newUniformTree

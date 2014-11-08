@@ -10,6 +10,7 @@ import Data.List
 import Data.Maybe
 import Data.Tree
 import qualified Data.Map as M
+import Data.Function (on)
 
 -- Cabal
 import Control.Monad.Random
@@ -49,7 +50,8 @@ clumpIt labelList neighborDistance distanceMap old new labelMap =
                     (\x -> Just $ if x `elem` labelList then x else v)
                     k
     neighbors x   = map fst
-                  . filter (\d -> snd d <= neighborDistance)
+                  . take neighborDistance
+                  . sortBy (compare `on` snd)
                   . fromJust
                   $ M.lookup x distanceMap
 
