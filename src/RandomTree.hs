@@ -91,7 +91,6 @@ makeTree :: [String]
 makeTree labelList neighborDistance minS maxS minC maxC clumpBool = do
     gen1         <- newStdGen
     gen2         <- newStdGen
-    gen3         <- newStdGen
 
     let (Just intTree) = runTree getTree minS maxS minC maxC gen1
         tree           = show <$> intTree
@@ -106,12 +105,10 @@ makeTree labelList neighborDistance minS maxS minC maxC clumpBool = do
                           neighborDistance
                           distanceMap
                           gen2
-                          gen3
                           labelMap
         newUniformLabelMap = assignRandomLabels
                              filledLabelList
                              gen2
-                             gen3
                              labelMap
         newClumpTree       = relabelTree newLabelMap tree
         newUniformTree     = relabelTree newUniformLabelMap tree

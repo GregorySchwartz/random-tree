@@ -61,32 +61,28 @@ assignRandomClumpedLabels :: (Eq a, Ord a)
                           -> Int
                           -> DistanceMap a
                           -> StdGen
-                          -> StdGen
                           -> LabelMap a
                           -> LabelMap a
-assignRandomClumpedLabels labelList neighborDistance distanceMap g1 g2 labelMap =
+assignRandomClumpedLabels labelList neighborDistance distanceMap g labelMap =
     foldl' ( \acc (x, y)
           -> clumpIt labelList neighborDistance distanceMap x y acc)
     labelMap
   . zip shuffledLeaves
-  $ shuffledLabels
+  $ labelList
   where
-    shuffledLabels = shuffle' labelList (length labelList) g1
-    shuffledLeaves = shuffle' (M.keys labelMap) (M.size labelMap) g2
+    shuffledLeaves = shuffle' (M.keys labelMap) (M.size labelMap) g
 
 -- | Assign random labels to the leaves of a tree
 assignRandomLabels :: (Eq a, Ord a)
                    => LabelList a
                    -> StdGen
-                   -> StdGen
                    -> LabelMap a
                    -> LabelMap a
-assignRandomLabels labelList g1 g2 labelMap = M.fromList
-                                            . zip shuffledLeaves
-                                            $ shuffledLabels
+assignRandomLabels labelList g labelMap = M.fromList
+                                        . zip shuffledLeaves
+                                        $ labelList
   where
-    shuffledLabels = shuffle' labelList (length labelList) g1
-    shuffledLeaves = shuffle' (M.keys labelMap) (M.size labelMap) g2
+    shuffledLeaves = shuffle' (M.keys labelMap) (M.size labelMap) g
 
 -- | Return the labelMap
 getLabelMap :: (Ord a) => [a] -> LabelMap a
