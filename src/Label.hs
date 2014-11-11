@@ -10,7 +10,8 @@ import Data.List
 import Data.Maybe
 import Data.Tree
 import qualified Data.Map as M
-import Data.Function (on)
+import qualified Data.Foldable as F
+import qualified Data.Sequence as S
 
 -- Cabal
 import Control.Monad.Random
@@ -44,14 +45,15 @@ clumpIt :: (Eq a, Ord a)
         -> LabelMap a
         -> LabelMap a
 clumpIt labelList neighborDistance distanceMap old new labelMap =
-    foldl' (\acc x -> updateMap x new acc) labelMap $ neighbors old
+    F.foldl' (\acc x -> updateMap x new acc) labelMap $ neighbors old
   where
     updateMap k v = M.update
                     (\x -> Just $ if x `elem` labelList then x else v)
                     k
-    neighbors x   = map fst
-                  . take neighborDistance
-                  . sortBy (compare `on` snd)
+    neighbors x   = S.take neighborDistance
+                  . F.foldl' (S.><) S.empty
+                  . map snd
+                  . M.toAscList
                   . fromJust
                   $ M.lookup x distanceMap
 

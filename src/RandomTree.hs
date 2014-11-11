@@ -99,7 +99,7 @@ makeTree labelList neighborDistance minS maxS minC maxC clumpBool = do
                         . concat
                         . repeat
                         $ labelList
-        distanceMap     = getDistanceMap tree
+        distanceMap     = getDistanceMapSuperNode . toSuperNodeTree Root $ tree
         newLabelMap     = assignRandomClumpedLabels
                           filledLabelList
                           neighborDistance
