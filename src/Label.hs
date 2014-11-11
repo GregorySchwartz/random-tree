@@ -7,11 +7,9 @@ module Label where
 
 -- Built-in
 import Data.List
-import Data.Maybe
 import Data.Tree
 import qualified Data.Map as M
 import qualified Data.Foldable as F
-import qualified Data.Sequence as S
 
 -- Cabal
 import Control.Monad.Random
@@ -32,6 +30,37 @@ relabelTree labelMap tree =
     foldl' (\accTree (x, y) -> fmap (modifyLabel x y) accTree) tree
   $ M.toAscList labelMap
 
+-- | Get the neighbors of a label in a fast, theoretically efficient way
+getNeighbors :: (Ord a) => Int -> a -> Tree (SuperNode a) -> [a]
+getNeighbors neighborDistance l ( Node { rootLabel = SuperRoot
+                                       , subForest = ts } ) =
+    getNeighbors neighborDistance l
+  . head
+  . filter (M.member l . myLeaves . rootLabel)
+  $ ts
+getNeighbors neighborDistance l ( Node { rootLabel = SuperNode { myRootLabel = _
+                                                               , myParent = p
+                                                               , myLeaves = ls }
+                                       , subForest = ts } )
+    | M.size ls == neighborDistance && relevant =
+        map fst . M.toAscList $ ls
+    | M.size ls > neighborDistance && relevant  =
+        getNeighbors neighborDistance l
+      . head
+      . filter (M.member l . myLeaves . rootLabel)
+      $ ts
+    | M.size ls < neighborDistance && relevant  =
+        take neighborDistance
+      . (:) l
+      . filter (/= l)
+      . map fst
+      . M.toAscList
+      . myLeaves
+      $ p
+    | otherwise                                 = []
+  where
+    relevant = M.member l ls
+
 -- | Assign clumps to the label list. Takes an old label and reassigns it to the
 -- new label in the labelmap, but looks at all neighbors defined by the
 -- distanceMap and the neighborDistance. If the reassigned nodes have already
@@ -39,35 +68,31 @@ relabelTree labelMap tree =
 clumpIt :: (Eq a, Ord a)
         => LabelList a
         -> Int
-        -> DistanceMap a
+        -> Tree (SuperNode a)
         -> a
         -> a
         -> LabelMap a
         -> LabelMap a
-clumpIt labelList neighborDistance distanceMap old new labelMap =
+clumpIt labelList neighborDistance tree old new labelMap =
     F.foldl' (\acc x -> updateMap x new acc) labelMap $ neighbors old
   where
     updateMap k v = M.update
                     (\x -> Just $ if x `elem` labelList then x else v)
                     k
-    neighbors x   = S.take neighborDistance
-                  . F.foldl' (S.><) S.empty
-                  . map snd
-                  . M.toAscList
-                  . fromJust
-                  $ M.lookup x distanceMap
+    neighbors x   = getNeighbors neighborDistance x tree
+
 
 -- | Assign random labels to the leaves of a tree in a clumped fashion
 assignRandomClumpedLabels :: (Eq a, Ord a)
                           => LabelList a
                           -> Int
-                          -> DistanceMap a
+                          -> Tree (SuperNode a)
                           -> StdGen
                           -> LabelMap a
                           -> LabelMap a
-assignRandomClumpedLabels labelList neighborDistance distanceMap g labelMap =
+assignRandomClumpedLabels labelList neighborDistance tree g labelMap =
     foldl' ( \acc (x, y)
-          -> clumpIt labelList neighborDistance distanceMap x y acc)
+          -> clumpIt labelList neighborDistance tree x y acc)
     labelMap
   . zip shuffledLeaves
   $ labelList

@@ -99,11 +99,11 @@ makeTree labelList neighborDistance minS maxS minC maxC clumpBool = do
                         . concat
                         . repeat
                         $ labelList
-        distanceMap     = getDistanceMapSuperNode . toSuperNodeTree Root $ tree
+        superTree       = toSuperNodeTree SuperRoot $ tree
         newLabelMap     = assignRandomClumpedLabels
                           filledLabelList
                           neighborDistance
-                          distanceMap
+                          superTree
                           gen2
                           labelMap
         newUniformLabelMap = assignRandomLabels

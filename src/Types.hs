@@ -20,10 +20,10 @@ import Control.Monad.Random
 
 -- Algebraic
 -- Tree with super smart nodes
-data SuperNode a = Root | SuperNode { myRootLabel :: a
-                                    , myParent    :: SuperNode a
-                                    , myLeaves    :: M.Map a Int }
-                                    deriving (Read, Show, Eq, Ord)
+data SuperNode a = SuperRoot | SuperNode { myRootLabel :: a
+                                         , myParent    :: SuperNode a
+                                         , myLeaves    :: M.Map a Int }
+                                         deriving (Read, Show, Eq, Ord)
 
 data TreeState a = TreeState { size :: Int }
 
