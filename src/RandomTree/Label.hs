@@ -41,6 +41,13 @@ getNeighbors neighborDistance l ( Node { rootLabel = SuperNode { myRootLabel = _
       . head
       . filter (M.member l . myLeaves . rootLabel)
       $ ts
+    | M.size ls < neighborDistance && relevant && p == SuperRoot =
+        take neighborDistance
+      . (:) l
+      . filter (/= l)
+      . map fst
+      . M.toAscList
+      $ ls -- Don't want the non-existant parent--I've reached the root here
     | M.size ls < neighborDistance && relevant  =
         take neighborDistance
       . (:) l
@@ -72,7 +79,6 @@ clumpIt neighborDistance tree pointer property propertyMap =
                     (\_ -> Just p)
                     k
     neighbors x   = getNeighbors neighborDistance x tree
-
 
 -- | Assign random labels to the leaves of a tree in a clumped fashion
 assignRandomClumpedProperties :: (Ord a, Eq b)
