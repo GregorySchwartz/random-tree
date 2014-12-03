@@ -7,6 +7,7 @@ module RandomTree.Label where
 
 -- Built-in
 import Data.List
+import Data.Maybe
 import Data.Tree
 import qualified Data.Map as M
 import qualified Data.Foldable as F
@@ -52,8 +53,7 @@ getNeighbors neighborDistance l ( Node { rootLabel = SuperNode { myRootLabel = _
         take neighborDistance
       . (:) l
       . filter (/= l)
-      . map fst
-      . M.toAscList
+      . M.keys
       . myLeaves
       $ p
     | otherwise                                 = []
@@ -69,14 +69,15 @@ clumpIt :: (Ord a, Eq b)
         -> Tree (SuperNode a)
         -> a
         -> b
-        -> PropertyMap a b
-        -> PropertyMap a b
+        -> PropertyMap a (Maybe b)
+        -> PropertyMap a (Maybe b)
 clumpIt neighborDistance tree pointer property propertyMap =
     F.foldl' (\acc x -> updateMap x property acc) propertyMap
   $ neighbors pointer
   where
-    updateMap k p = M.update
-                    (\_ -> Just p)
+    updateMap k p = M.adjust
+                    --(\_ -> Just p)
+                    (\x -> if isNothing x then Just p else x)
                     k
     neighbors x   = getNeighbors neighborDistance x tree
 
@@ -86,8 +87,8 @@ assignRandomClumpedProperties :: (Ord a, Eq b)
                               -> Int
                               -> Tree (SuperNode a)
                               -> StdGen
-                              -> PropertyMap a b
-                              -> PropertyMap a b
+                              -> PropertyMap a (Maybe b)
+                              -> PropertyMap a (Maybe b)
 assignRandomClumpedProperties propertyList neighborDistance tree g propertyMap =
     foldl' ( \acc (x, y)
           -> clumpIt neighborDistance tree x y acc)
@@ -98,16 +99,21 @@ assignRandomClumpedProperties propertyList neighborDistance tree g propertyMap =
     shuffledLeaves = shuffle' (M.keys propertyMap) (M.size propertyMap) g
 
 -- | Assign random labels to the leaves of a tree
-assignRandomProperties :: (Eq a, Ord a)
+assignRandomProperties :: (Ord a)
                        => [b]
                        -> StdGen
-                       -> PropertyMap a b
-                       -> PropertyMap a b
+                       -> PropertyMap a (Maybe b)
+                       -> PropertyMap a (Maybe b)
 assignRandomProperties propertyList g propertyMap = M.fromList
                                                   . zip shuffledLeaves
+                                                  . map Just
                                                   $ propertyList
   where
     shuffledLeaves = shuffle' (M.keys propertyMap) (M.size propertyMap) g
+
+-- | Return the empty propertyMap
+emptyPropertyMap :: (Ord a) => [a] -> PropertyMap a (Maybe b)
+emptyPropertyMap x = M.fromList . zip x . repeat $ Nothing
 
 -- | Return the propertyMap
 getPropertyMap :: (Ord a) => [a] -> PropertyMap a a

@@ -6,7 +6,9 @@
 module RandomTree.Algorithms where
 
 -- Built-in
+import Data.Maybe
 import Data.Tree
+import qualified Data.Map as M
 import Control.Monad.Reader
 import Control.Monad.State
 import Control.Monad.Trans.Maybe
@@ -45,6 +47,7 @@ runTree start minS maxS minC maxC g
                             , minSize     = minS
                             , minChildren = minC
                             , maxChildren = maxC }
+
 -- | The recursion for each step of the tree
 treeRecursion :: ReaderStateRandom (Tree Int)
 treeRecursion = do
@@ -95,7 +98,7 @@ makeTree propertyList neighborDistance minS maxS minC maxC clumpBool = do
 
     let (Just intTree) = runTree getTree minS maxS minC maxC gen1
         tree           = show <$> intTree
-        propertyMap    = getPropertyMap . leaves $ tree
+        propertyMap    = emptyPropertyMap . leaves $ tree
         filledPropertyList  = take (length . leaves $ tree)
                             . concat
                             . repeat
@@ -115,7 +118,7 @@ makeTree propertyList neighborDistance minS maxS minC maxC clumpBool = do
     if clumpBool
         then return
            $ PropertySuperTree { superTree = currentSuperTree
-                               , superProperties = newPropertyMap }
+                               , superProperties = M.map fromJust newPropertyMap }
         else return
            $ PropertySuperTree { superTree = currentSuperTree
-                               , superProperties = newUniformPropertyMap }
+                               , superProperties = M.map fromJust newUniformPropertyMap }
