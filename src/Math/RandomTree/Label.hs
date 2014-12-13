@@ -10,6 +10,7 @@ import Data.List
 import Data.Maybe
 import Data.Tree
 import qualified Data.Map as M
+import qualified Data.Sequence as Seq
 import qualified Data.Foldable as F
 
 -- Cabal
@@ -69,15 +70,15 @@ clumpIt :: (Ord a, Eq b)
         -> Tree (SuperNode a)
         -> a
         -> b
-        -> PropertyMap a (Maybe b)
-        -> PropertyMap a (Maybe b)
+        -> MaybePropertyMap a b
+        -> MaybePropertyMap a b
 clumpIt neighborDistance tree pointer property propertyMap =
     F.foldl' (\acc x -> updateMap x property acc) propertyMap
   $ neighbors pointer
   where
     updateMap k p = M.adjust
                     --(\_ -> Just p)
-                    (\x -> if isNothing x then Just p else x)
+                    (\x -> if isNothing x then Just (Seq.singleton p) else x)
                     k
     neighbors x   = getNeighbors neighborDistance x tree
 
@@ -87,8 +88,8 @@ assignRandomClumpedProperties :: (Ord a, Eq b)
                               -> Int
                               -> Tree (SuperNode a)
                               -> StdGen
-                              -> PropertyMap a (Maybe b)
-                              -> PropertyMap a (Maybe b)
+                              -> MaybePropertyMap a b
+                              -> MaybePropertyMap a b
 assignRandomClumpedProperties propertyList neighborDistance tree g propertyMap =
     foldl' ( \acc (x, y)
           -> clumpIt neighborDistance tree x y acc)
@@ -102,19 +103,19 @@ assignRandomClumpedProperties propertyList neighborDistance tree g propertyMap =
 assignRandomProperties :: (Ord a)
                        => [b]
                        -> StdGen
-                       -> PropertyMap a (Maybe b)
-                       -> PropertyMap a (Maybe b)
+                       -> MaybePropertyMap a b
+                       -> MaybePropertyMap a b
 assignRandomProperties propertyList g propertyMap = M.fromList
                                                   . zip shuffledLeaves
-                                                  . map Just
+                                                  . map (Just . Seq.singleton)
                                                   $ propertyList
   where
     shuffledLeaves = shuffle' (M.keys propertyMap) (M.size propertyMap) g
 
 -- | Return the empty propertyMap
-emptyPropertyMap :: (Ord a) => [a] -> PropertyMap a (Maybe b)
+emptyPropertyMap :: (Ord a) => [a] -> MaybePropertyMap a b
 emptyPropertyMap x = M.fromList . zip x . repeat $ Nothing
 
 -- | Return the propertyMap
 getPropertyMap :: (Ord a) => [a] -> PropertyMap a a
-getPropertyMap x = M.fromList . zip x $ x
+getPropertyMap x = M.fromList . zip x . map Seq.singleton $ x

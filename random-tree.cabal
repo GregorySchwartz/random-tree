@@ -10,7 +10,7 @@ name:                random-tree
 -- PVP summary:      +-+------- breaking API changes
 --                   | | +----- non-breaking API additions
 --                   | | | +--- code changes with no API change
-version:             0.6.0.0
+version:             0.6.0.2
 
 -- A short (one-line) description of the package.
 synopsis:            Create random trees
@@ -57,7 +57,7 @@ library
   -- other-extensions:    
   
   -- Other library packages from which modules are imported.
-  build-depends:       base >=4.6 && <4.8, containers >=0.5 && <0.6, random >=1.0 && <1.1, mtl >=2.1 && <2.3, MonadRandom >=0.3 && <0.4, lens >=4.6 && <4.7, transformers >=0.2 && <0.5, random-shuffle >=0.0 && <0.1, tree-fun >=0.5.0.0 && <0.6
+  build-depends:       base >=4.6 && <4.8, containers >=0.5 && <0.6, random >=1.0 && <1.1, mtl >=2.1 && <2.3, MonadRandom >=0.3 && <0.4, lens >=4.6 && <4.7, transformers >=0.2 && <0.5, random-shuffle >=0.0 && <0.1, tree-fun >=0.6.1.0 && <0.7
   
   -- Directories containing source files.
   hs-source-dirs:      src
