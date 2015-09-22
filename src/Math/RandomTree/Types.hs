@@ -33,3 +33,7 @@ newtype ReaderStateRandom a = ReaderStateRandom
              , MonadRandom
              , MonadState (TreeState Int)
              , MonadReader TreeConfig )
+
+instance Alternative ReaderStateRandom where
+    (<|>) = mplus
+    empty = mzero
