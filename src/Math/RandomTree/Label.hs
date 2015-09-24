@@ -16,7 +16,7 @@ import qualified Data.Foldable as F
 -- Cabal
 import Control.Monad.Random
 import System.Random.Shuffle
-import Math.FunTree.Types
+import Math.TreeFun.Types
 
 -- | Modify the label of a tree
 modifyLabel :: (Eq a) => a -> a -> a -> a

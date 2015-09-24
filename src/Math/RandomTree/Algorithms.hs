@@ -17,8 +17,8 @@ import Control.Applicative
 --Cabal
 import Control.Monad.Random
 import Control.Lens ((??))
-import Math.FunTree.Tree
-import Math.FunTree.Types
+import Math.TreeFun.Tree
+import Math.TreeFun.Types
 
 -- Local
 import Math.RandomTree.Types
