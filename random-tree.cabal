@@ -48,7 +48,9 @@ cabal-version:       >=1.10
 
 library
   -- Modules exported by the library.
-  exposed-modules:     Math.RandomTree.Algorithms, Math.RandomTree.Types, Math.RandomTree.Label
+  exposed-modules:     Math.RandomTree.Algorithms
+                     , Math.RandomTree.Types
+                     , Math.RandomTree.Label
   
   -- Modules included in this library but not exported.
   -- other-modules:       
