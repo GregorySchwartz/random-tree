@@ -1,6 +1,5 @@
 flags: {}
 packages:
 - '.'
-- /home/gw/code/utility/tree-fun/
 extra-deps: []
 resolver: nightly-2015-09-21
